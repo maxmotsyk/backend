@@ -59,6 +59,7 @@ class ProductDetail(models.Model):
 class ProductVariation(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Product")
     description = models.TextField(verbose_name="Description")
+    img = models.FileField(verbose_name="img", upload_to='product_variation/', default=None)
 
     def __str__(self):
         return self.description
