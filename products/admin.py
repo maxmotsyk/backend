@@ -2,7 +2,8 @@ from django.contrib import admin
 from .models import RecommendProduct, Product, ProductDetail, ProductImage, ProductVariation
 from reviews.models import Review
 
-class ProductVariation(admin.StackedInline):
+
+class ProductVariationInline(admin.StackedInline):
     model = ProductVariation
     extra = 1
 
@@ -34,4 +35,4 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('title', 'price', 'discount')
     search_fields = ('title', 'description')
     list_display_links = ('title',)
-    inlines = [ProductImageInline, ProductDetailInline, ProductVariation, ReviewInline]
+    inlines = [ProductImageInline, ProductDetailInline, ProductVariationInline, ReviewInline]

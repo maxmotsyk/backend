@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from rest_framework import serializers
 from .models import Product, ProductDetail, ProductVariation, ProductImage
 from reviews.models import Review
@@ -32,7 +33,15 @@ class ProductSerializer(serializers.ModelSerializer):
     details = ProductDetailSerializer(many=True, read_only=True, source='productdetail_set')
     variations = ProductVariationSerializer(many=True, read_only=True, source='productvariation_set')
     reviews = ReviewSerializer(many=True, read_only=True, source='review_set')
+    avg_rating_stars = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'description', 'price', 'discount', 'images', 'details', 'variations', 'reviews']
+        fields = [
+            'id', 'title', 'description', 'price', 'discount', 'images',
+            'details', 'variations', 'reviews', 'avg_rating_stars'
+        ]
+
+    def get_avg_rating_stars(self, obj):
+        average_rating = Review.objects.filter(product=obj).aggregate(Avg('rating_stars'))['rating_stars__avg']
+        return int(average_rating) if average_rating is not None else 0

@@ -1,5 +1,5 @@
 from django.db import models
-from products.models import Product, ProductVariation
+from products.models import Product, ProductVariation, RecommendProduct
 
 
 class DeliveryMethod(models.Model):
@@ -46,7 +46,12 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name="Order")
-    variation = models.ForeignKey(ProductVariation, on_delete=models.CASCADE, verbose_name="Product Variation")
+    variation = models.ForeignKey(
+        ProductVariation, on_delete=models.CASCADE, verbose_name="Product Variation", blank=True, null=True
+    )
+    recommend_product = models.ForeignKey(
+        RecommendProduct, on_delete=models.CASCADE, verbose_name="Recomend Product", blank=True, null=True
+    )
     quantity = models.IntegerField(verbose_name="Quantity")
 
     def __str__(self):
