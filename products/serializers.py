@@ -19,13 +19,13 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 class ProductVariationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductVariation
-        fields = ['id', 'description']
+        fields = ['id', 'description', 'img']
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ['id', 'message', 'rating_stars', 'created_by']
+        fields = ['id', 'message', 'rating_stars', 'created_by', 'creator_img', 'img']
 
 
 class ProductSerializer(serializers.ModelSerializer):

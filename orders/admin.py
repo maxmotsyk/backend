@@ -16,7 +16,7 @@ class DeliveryMethodAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product', 'status', 'first_name', 'last_name', 'phone_num', 'email', 'total_amount')
+    list_display = ('id', 'product', 'status', 'first_name', 'last_name', 'phone_num', 'email', 'total_amount', 'created_at', 'updated_at')
     search_fields = ('first_name', 'last_name', 'phone_num', 'email', 'city')
     list_display_links = ('id', 'product')
     inlines = [OrderItemInline]

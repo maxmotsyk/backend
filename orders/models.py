@@ -35,6 +35,9 @@ class Order(models.Model):
     postal_code = models.CharField(max_length=10, verbose_name="Postal Code")
     city = models.CharField(max_length=255, verbose_name="City")
     total_amount = models.FloatField(verbose_name="Total Amount")
+    created_at = models.DateTimeField(verbose_name="Created At", auto_now_add=True, auto_now=False, null=True)
+    updated_at = models.DateTimeField(verbose_name="Updated At", auto_now_add=False, auto_now=True, null=True)
+    payment_url = models.URLField(verbose_name='Payment URL', null=True)
 
     def __str__(self):
         return f"Order {self.id}"
@@ -45,7 +48,7 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name="Order")
+    order = models.ForeignKey(Order, related_name='order_items', on_delete=models.CASCADE, verbose_name="Order")
     variation = models.ForeignKey(
         ProductVariation, on_delete=models.CASCADE, verbose_name="Product Variation", blank=True, null=True
     )

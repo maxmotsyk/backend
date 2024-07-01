@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ttk6wv5(z(l#!6yj!@4=q$)b2vkxprn-yc$m(2k9lcsj%q^(d8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -135,3 +135,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+PAYU_CLIENT_ID = '4327279'
+PAYU_CLIENT_SECRET = '344f1e3de0831d38bd8d4ad9b3f96064'
+PAYU_MERCHANT_SECRET = '344f1e3de0831d38bd8d4ad9b3f96064'
+PAYU_MERCHANT_POS_ID = '4327279'
