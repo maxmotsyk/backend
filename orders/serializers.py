@@ -56,6 +56,7 @@ class OrderCreateSerializer(serializers.Serializer):
     recommend_products = serializers.ListField(child=RecommendProductSerializer(), required=False)
     order_items = serializers.ListField(child=OrderItemSerializer())
     payment_url = serializers.URLField(read_only=True)
+    payment_type = serializers.CharField(max_length=20)
 
     def create(self, validated_data):
         order_items_data = validated_data.pop('order_items')
@@ -119,6 +120,7 @@ class OrderCreateSerializer(serializers.Serializer):
             address=validated_data['address'],
             house_number=validated_data['house_number'],
             postal_code=validated_data['postal_code'],
+            payment_type=validated_data['payment_type'],
             city=validated_data['city']
         )
 
@@ -132,67 +134,66 @@ class OrderCreateSerializer(serializers.Serializer):
                 order=order, recommend_product=recommend_product, quantity=recommend_product_data['quantity']
             )
 
-        token_url = "https://secure.payu.com/pl/standard/user/oauth/authorize"
-        token_headers = {
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
-        token_data = {
-            "grant_type": "client_credentials",
-            "client_id": settings.PAYU_CLIENT_ID,
-            "client_secret": settings.PAYU_CLIENT_SECRET
-        }
-        token_response = requests.post(token_url, data=token_data, headers=token_headers)
+        if validated_data['payment_type'] == 'payu':
+            token_url = "https://secure.payu.com/pl/standard/user/oauth/authorize"
+            token_headers = {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+            token_data = {
+                "grant_type": "client_credentials",
+                "client_id": settings.PAYU_CLIENT_ID,
+                "client_secret": settings.PAYU_CLIENT_SECRET
+            }
+            token_response = requests.post(token_url, data=token_data, headers=token_headers)
 
-        print(token_response.status_code, token_response.json())
+            if token_response.status_code != 200:
+                raise serializers.ValidationError("Failed to obtain access token")
 
-        if token_response.status_code != 200:
-            raise serializers.ValidationError("Failed to obtain access token")
+            access_token = token_response.json().get("access_token")
 
-        access_token = token_response.json().get("access_token")
+            payu_url = "https://secure.payu.com/api/v2_1/orders"
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {access_token}"
+            }
+            payload = {
+                "notifyUrl": f"http://127.0.0.1:8000/orders/{order.id}",
+                "continueUrl": f"http://127.0.0.1:8000/orders/{order.id}/success",
+                "failureUrl": f"http://127.0.0.1:8000/orders/{order.id}/failed/",
+                "customerIp": "127.0.0.1",
+                "merchantPosId": settings.PAYU_MERCHANT_POS_ID,
+                "description": f"Order {order.id}",
+                "currencyCode": "PLN",
+                "totalAmount": int(total_amount * 100),
+                "buyer": {
+                    "email": order.email,
+                    "phone": order.phone_num,
+                    "firstName": order.first_name,
+                    "lastName": order.last_name,
+                    "language": "pl",
+                    "delivery": {
+                        "street": f"{order.address} {order.house_number}",
+                        "postalCode": order.postal_code,
+                        "city": order.city,
+                        "recipientName": f"{order.first_name} {order.last_name}",
+                        "recipientEmail": order.email,
+                        "recipientPhone": order.phone_num
+                    }
+                },
+                "products": products_payload
+            }
 
-        payu_url = "https://secure.payu.com/api/v2_1/orders"
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {access_token}"
-        }
-        payload = {
-            "notifyUrl": f"http://127.0.0.1:8000/orders/{order.id}",
-            "continueUrl": f"http://127.0.0.1:8000/orders/{order.id}/success",
-            "failureUrl": f"http://127.0.0.1:8000/orders/{order.id}/failed/",
-            "customerIp": "127.0.0.1",
-            "merchantPosId": settings.PAYU_MERCHANT_POS_ID,
-            "description": f"Order {order.id}",
-            "currencyCode": "PLN",
-            "totalAmount": int(total_amount * 100),
-            "buyer": {
-                "email": order.email,
-                "phone": order.phone_num,
-                "firstName": order.first_name,
-                "lastName": order.last_name,
-                "language": "pl",
-                "delivery": {
-                    "street": f"{order.address} {order.house_number}",
-                    "postalCode": order.postal_code,
-                    "city": order.city,
-                    "recipientName": f"{order.first_name} {order.last_name}",
-                    "recipientEmail": order.email,
-                    "recipientPhone": order.phone_num
-                }
-            },
-            "products": products_payload
-        }
-
-        response = requests.post(payu_url, json=payload, headers=headers, allow_redirects=False)
+            response = requests.post(payu_url, json=payload, headers=headers, allow_redirects=False)
 
 
-        if response.status_code == 302:
-            response_data = response.json()
+            if response.status_code == 302:
+                response_data = response.json()
 
-            if 'redirectUri' in response_data:
-                order.payment_url = response_data['redirectUri']
-                order.save()
-        else:
-            raise serializers.ValidationError("Payment initialization failed.")
+                if 'redirectUri' in response_data:
+                    order.payment_url = response_data['redirectUri']
+                    order.save()
+            else:
+                raise serializers.ValidationError("Payment initialization failed.")
 
         return order
 

@@ -23,6 +23,11 @@ class Order(models.Model):
         ('failed', 'Failed'),
     ]
 
+    PAYMENT_TYPE = [
+        ('payu', 'Pay U'),
+        ('payment_on_delivery', 'Payment on delivery')
+    ]
+
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Product")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, verbose_name="Status")
     first_name = models.CharField(max_length=255, verbose_name="First Name")
@@ -34,10 +39,11 @@ class Order(models.Model):
     house_number = models.CharField(max_length=20, verbose_name="House Number")
     postal_code = models.CharField(max_length=10, verbose_name="Postal Code")
     city = models.CharField(max_length=255, verbose_name="City")
+    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE, verbose_name="Payment Type", null=True)
     total_amount = models.FloatField(verbose_name="Total Amount")
     created_at = models.DateTimeField(verbose_name="Created At", auto_now_add=True, auto_now=False, null=True)
     updated_at = models.DateTimeField(verbose_name="Updated At", auto_now_add=False, auto_now=True, null=True)
-    payment_url = models.URLField(verbose_name='Payment URL', null=True)
+    payment_url = models.URLField(verbose_name='Payment URL', blank=True, null=True)
 
     def __str__(self):
         return f"Order {self.id}"
