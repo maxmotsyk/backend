@@ -1,6 +1,6 @@
 from django.db.models import Avg
 from rest_framework import serializers
-from .models import Product, ProductDetail, ProductVariation, ProductImage
+from .models import Product, ProductDetail, ProductVariation, ProductImage, RecommendProduct
 from reviews.models import Review
 
 
@@ -28,18 +28,26 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ['id', 'message', 'rating_stars', 'created_by', 'creator_img', 'img']
 
 
+class RecommendProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecommendProduct
+        fields = ['id', 'name', 'description', 'img', 'price']
+
+
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     details = ProductDetailSerializer(many=True, read_only=True, source='productdetail_set')
     variations = ProductVariationSerializer(many=True, read_only=True, source='productvariation_set')
     reviews = ReviewSerializer(many=True, read_only=True, source='review_set')
     avg_rating_stars = serializers.SerializerMethodField()
+    recommend_products = RecommendProductSerializer(many=True, read_only=True)
+
 
     class Meta:
         model = Product
         fields = [
             'id', 'title', 'description', 'price', 'discount', 'images',
-            'details', 'variations', 'reviews', 'avg_rating_stars'
+            'details', 'variations', 'reviews', 'avg_rating_stars', 'recommend_products'
         ]
 
     def get_avg_rating_stars(self, obj):
