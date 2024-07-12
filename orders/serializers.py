@@ -70,7 +70,6 @@ class OrderCreateSerializer(serializers.Serializer):
         total_amount = delivery_method.price
         
         order_items_lenght = len(order_items_data)
-        total_amount = 0  # Початкове значення для загальної суми
 
         discount = 0
         if order_items_lenght == 2:
