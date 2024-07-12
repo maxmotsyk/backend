@@ -20,7 +20,7 @@ class Product(models.Model):
     description = models.TextField(verbose_name="Description")
     price = models.FloatField(verbose_name="Price")
     discount = models.IntegerField(verbose_name="Discount")
-    recommend_products = models.ManyToManyField(RecommendProduct, verbose_name="Recommended Products")
+    recommend_products = models.ManyToManyField(RecommendProduct, verbose_name="Recommended Products", related_name='recommended_for')
 
     def __str__(self):
         return self.title
